@@ -4,3 +4,4 @@ let {num, str} = obj;
 
 console.log(num);
 console.log(str);  
+
