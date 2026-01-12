@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar chart creation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+
+        .entry-section {
+            border: 1px solid #999;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .entry-section label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .entry-section input {
+            margin-right: 15px;
+            padding: 5px;
+        }
+
+        .view-button {
+            background-color: #e0e0e0;
+            border: 1px solid black;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .view-button:hover {
+            background-color: #d0d0d0;
+        }
+
+        .chart-container {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .bar-item {
+            margin-bottom: 15px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .bar-name {
+            font-weight: bold;
+        }
+
+        .bar-value {
+            color: #555;
+        }
+
+        .bar {
+            height: 15px;
+            transition: width 0.3s ease;
+        }
+    </style>
+    <script>
+        let numbersList = [];
+
+        const barColors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#7CBA3D', '#E74C3C', '#3498DB', '#9B59B6',
+            '#1ABC9C', '#F39C12', '#2ECC71', '#E91E63', '#00BCD4'
+        ];
+
+        function addEntry() {
+            const nameInput = document.getElementById('barName');
+            const valueInput = document.getElementById('barValue');
+
+            const name = nameInput.value.trim();
+            const value = parseFloat(valueInput.value);
+
+            if (name === '' || isNaN(value) || value <= 0) {
+                alert('Please enter a valid name and a positive number.');
+                return;
+            }
+
+            numbersList.push({
+                name: name,
+                value: value
+            });
+
+            nameInput.value = '';
+            valueInput.value = '';
+
+            renderCharts();
+        }
+
+        function renderCharts() {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
+
+            if (numbersList.length === 0) {
+                return;
+            }
+
+            const maxValue = Math.max(...numbersList.map(item => item.value));
+
+            numbersList.forEach((item, index) => {
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+
+                const widthPercentage = (item.value / maxValue) * 100;
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'bar-name';
+                nameSpan.textContent = item.name;
+
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'bar-value';
+                valueSpan.textContent = item.value + ' (' + widthPercentage.toFixed(1) + '%)';
+
+                label.appendChild(nameSpan);
+                label.appendChild(valueSpan);
+
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.width = widthPercentage + '%';
+                bar.style.backgroundColor = barColors[index % barColors.length];
+
+                barItem.appendChild(label);
+                barItem.appendChild(bar);
+                container.appendChild(barItem);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Bar Chart Creation</h1>
+
+    <section class="entry-section">
+        <label for="barName">Name:</label>
+        <input type="text" id="barName" placeholder="Enter bar name">
+
+        <label for="barValue">Value:</label>
+        <input type="number" id="barValue" placeholder="Enter number" min="0">
+
+        <button class="view-button" onclick="addEntry()">View</button>
+    </section>
+
+    <div class="chart-container" id="chartContainer">
+    </div>
+</body>
+</html>
