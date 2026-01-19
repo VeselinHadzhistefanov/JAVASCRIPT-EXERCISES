@@ -14,6 +14,7 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             min-height: 100vh;
         }
 
@@ -32,12 +33,17 @@
             padding: 20px;
             background-color: #f5f5f5;
             border-right: 1px solid #ccc;
-            display: flex;
-            flex-direction: column;
+            display: flex;            flex-direction: row;
             gap: 20px;
         }
 
-        /* Name Input Section */
+        /* Name and Values Section */
+        .name-and-values {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Name Section */
         .name-section {
             display: flex;
             flex-direction: column;
@@ -55,21 +61,80 @@
             font-size: 14px;
         }
 
-        /* Add Values Section */
-        .add-values-section {
+        /* Values List Section */
+        .values-list-section {
+            border: 1px solid #ddd;
+            background: white;
+            flex: 1;
+            overflow-y: scroll;
+        }
+
+        .values-list-header {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            font-weight: normal;
+        }
+
+        .values-list {
+            padding: 10px 15px;
+        }
+
+        .value-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .value-item:last-child {
+            border-bottom: none;
+        }
+
+        .value-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .value-name {
+            flex: 2;
+        }
+
+        .value-amount {
+            flex: 1;
+            text-align: right;
+        }
+
+        .value-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .value-delete:hover {
+            color: #ff0000;
+        }
+
+        /* Add Value Section */
+        .add-value {
             border: 1px solid black;
             padding: 15px;
             position: relative;
         }
 
-        .add-values-header {
+        .add-value-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
 
-        .add-values-header h3 {
+        .add-value-header h3 {
             font-size: 14px;
             font-weight: normal;
         }
@@ -211,66 +276,6 @@
             transform: translateY(-50%);
         }
 
-        /* Values List Section */
-        .values-list-section {
-            border: 1px solid #ddd;
-            background: white;
-            flex: 1;
-            overflow-y: auto;
-            min-height: 200px;
-        }
-
-        .values-list-header {
-            padding: 10px 15px;
-            background: #f0f0f0;
-            border-bottom: 1px solid #ddd;
-            font-weight: normal;
-        }
-
-        .values-list {
-            padding: 10px 15px;
-        }
-
-        .value-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .value-item:last-child {
-            border-bottom: none;
-        }
-
-        .value-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .value-name {
-            flex: 2;
-        }
-
-        .value-amount {
-            flex: 1;
-            text-align: right;
-        }
-
-        .value-delete {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #999;
-            font-size: 16px;
-        }
-
-        .value-delete:hover {
-            color: #ff0000;
-        }
-
         /* Pie Chart Display Area */
         .chart-area {
             flex: 1;
@@ -334,30 +339,35 @@
     <div class="menu-area">
         <!-- Creation Panel -->
         <div class="creation-panel">
-            <!-- Name Input -->
-            <div class="name-section">
-                <label for="chart-name">Name this pie chart:</label>
-                <input type="text" id="chart-name" placeholder="Enter chart name">
+
+            <!-- Name and Values -->
+             <div class="name-and-values">
+
+                <!-- Name Input -->
+                <div class="name-section">
+                    <label for="chart-name">Name this pie chart:</label>
+                    <input type="text" id="chart-name" placeholder="Enter chart name">
+                </div>
+
+                <!-- Values List -->
+                <div class="values-list-section">
+                    <div class="values-list-header">Chart Values</div>
+                    <div class="values-list" id="values-list">
+                        <!-- Values will be added here -->
+                    </div>
+                </div>
             </div>
 
-            <!-- Add Values Section -->
-            <div class="add-values-section">
-                <div class="add-values-header">
-                    <h3>Add Values</h3>
+            <!-- Add New Value Box -->
+            <div class="add-value">
+                <div class="add-value-header">
+                    <h3>Add Value</h3>
                     <button class="add-btn" id="add-value-btn">+</button>
                 </div>
                 <div class="input-row">
                     <input type="text" id="value-name" placeholder="Name">
                     <input type="number" id="value-amount" placeholder="Value" step="0.01">
                     <button class="color-picker-btn" id="color-btn"></button>
-                </div>
-            </div>
-
-            <!-- Values List -->
-            <div class="values-list-section">
-                <div class="values-list-header">Chart Values</div>
-                <div class="values-list" id="values-list">
-                    <!-- Values will be added here -->
                 </div>
             </div>
 
