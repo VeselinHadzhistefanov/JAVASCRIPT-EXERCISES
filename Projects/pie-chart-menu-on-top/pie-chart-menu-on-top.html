@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pie Chart Creator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .menu-area {
+            width: 100vw;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Creation Panel - 25% width, min 500px */
+        .creation-panel {
+            width: 50%;
+            height: 200px;
+            min-width: 500px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Name Input Section */
+        .name-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .name-section label {
+            font-weight: normal;
+        }
+
+        .name-section input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Add Values Section */
+        .add-values-section {
+            border: 1px solid black;
+            padding: 15px;
+            position: relative;
+        }
+
+        .add-values-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .add-values-header h3 {
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .add-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:hover {
+            background: #eee;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-row input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .input-row input[type="text"] {
+            flex: 2;
+        }
+
+        .input-row input[type="number"] {
+            flex: 1;
+            width: 80px;
+        }
+
+        /* Color Picker Button */
+        .color-picker-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            cursor: pointer;
+            background: #ff6384;
+        }
+
+        /* Custom Color Picker Overlay */
+        .color-picker-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-picker-overlay.active {
+            display: flex;
+        }
+
+        .color-picker-container {
+            width: 10vw;
+            min-width: 150px;
+            aspect-ratio: 1;
+            position: relative;
+            background: white;
+        }
+
+        .color-picker-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .color-picker-close,
+        .color-picker-confirm {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: 1px solid black;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .color-picker-close {
+            top: -40px;
+        }
+
+        .color-picker-confirm {
+            bottom: -40px;
+        }
+
+        .color-picker-close:hover,
+        .color-picker-confirm:hover {
+            background: #f0f0f0;
+        }
+
+        .crosshair {
+            position: absolute;
+            pointer-events: none;
+            width: 20px;
+            height: 20px;
+            transform: translate(-50%, -50%);
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: black;
+        }
+
+        .crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Values List Section */
+        .values-list-section {
+            border: 1px solid #ddd;
+            background: white;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .values-list-header {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            font-weight: normal;
+        }
+
+        .values-list {
+            padding: 10px 15px;
+        }
+
+        .value-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .value-item:last-child {
+            border-bottom: none;
+        }
+
+        .value-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .value-name {
+            flex: 2;
+        }
+
+        .value-amount {
+            flex: 1;
+            text-align: right;
+        }
+
+        .value-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .value-delete:hover {
+            color: #ff0000;
+        }
+
+        /* Pie Chart Display Area */
+        .chart-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .chart-container {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .pie-canvas {
+            max-width: 400px;
+            max-height: 400px;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        /* No charts message */
+        .no-charts {
+            color: #999;
+            text-align: center;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu area - upper bounds -->
+    <div class="menu-area">
+        <!-- Creation Panel -->
+        <div class="creation-panel">
+            <!-- Name Input -->
+            <div class="name-section">
+                <label for="chart-name">Name this pie chart:</label>
+                <input type="text" id="chart-name" placeholder="Enter chart name">
+            </div>
+
+            <!-- Add Values Section -->
+            <div class="add-values-section">
+                <div class="add-values-header">
+                    <h3>Add Values</h3>
+                    <button class="add-btn" id="add-value-btn">+</button>
+                </div>
+                <div class="input-row">
+                    <input type="text" id="value-name" placeholder="Name">
+                    <input type="number" id="value-amount" placeholder="Value" step="0.01">
+                    <button class="color-picker-btn" id="color-btn"></button>
+                </div>
+            </div>
+
+            <!-- Values List -->
+            <div class="values-list-section">
+                <div class="values-list-header">Chart Values</div>
+                <div class="values-list" id="values-list">
+                    <!-- Values will be added here -->
+                </div>
+            </div>
+
+            <!-- Create Chart Button -->
+            <button id="create-chart-btn" style="padding: 12px; background: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px;">Create Pie Chart</button>
+        </div>
+    </div>
+
+    <!-- Pie Charts Display Area -->
+    <div class="chart-area" id="chart-area">
+        <div class="no-charts">No pie charts created yet. Add values and click "Create Pie Chart" to begin.</div>
+    </div>
+
+    <!-- Custom Color Picker Overlay -->
+    <div class="color-picker-overlay" id="color-picker-overlay">
+        <div class="color-picker-container">
+            <button class="color-picker-close" id="color-picker-close">X</button>
+            <canvas class="color-picker-canvas" id="color-picker-canvas"></canvas>
+            <div class="crosshair" id="crosshair"></div>
+            <button class="color-picker-confirm" id="color-picker-confirm">&#10003;</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentColor = '#ff6384';
+        let tempColor = '#ff6384';
+        let values = [];
+        let charts = [];
+
+        // DOM Elements
+        const colorBtn = document.getElementById('color-btn');
+        const colorOverlay = document.getElementById('color-picker-overlay');
+        const colorCanvas = document.getElementById('color-picker-canvas');
+        const colorClose = document.getElementById('color-picker-close');
+        const colorConfirm = document.getElementById('color-picker-confirm');
+        const crosshair = document.getElementById('crosshair');
+        const addValueBtn = document.getElementById('add-value-btn');
+        const valueNameInput = document.getElementById('value-name');
+        const valueAmountInput = document.getElementById('value-amount');
+        const valuesList = document.getElementById('values-list');
+        const createChartBtn = document.getElementById('create-chart-btn');
+        const chartArea = document.getElementById('chart-area');
+        const chartNameInput = document.getElementById('chart-name');
+
+        // Color Picker Canvas Context
+        const ctx = colorCanvas.getContext('2d');
+
+        // Initialize color picker canvas
+        function initColorPicker() {
+            const container = colorCanvas.parentElement;
+            const size = Math.max(150, window.innerWidth * 0.1);
+            colorCanvas.width = size;
+            colorCanvas.height = size;
+
+            // Draw color gradient
+            // Hue mapped to height (Y-axis), Saturation 25-75% mapped to width (X-axis)
+            for (let y = 0; y < colorCanvas.height; y++) {
+                for (let x = 0; x < colorCanvas.width; x++) {
+                    const hue = (y / colorCanvas.height) * 360;
+                    const saturation = 25 + (x / colorCanvas.width) * 50; // 25% to 75%
+                    const lightness = 50;
+                    ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    ctx.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+
+        // HSL to Hex conversion
+        function hslToHex(h, s, l) {
+            s /= 100;
+            l /= 100;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+
+        // Get color from position
+        function getColorAtPosition(x, y) {
+            const hue = (y / colorCanvas.height) * 360;
+            const saturation = 25 + (x / colorCanvas.width) * 50;
+            const lightness = 50;
+            return hslToHex(hue, saturation, lightness);
+        }
+
+        // Color picker event handlers
+        colorBtn.addEventListener('click', () => {
+            initColorPicker();
+            colorOverlay.classList.add('active');
+            tempColor = currentColor;
+        });
+
+        colorClose.addEventListener('click', () => {
+            colorOverlay.classList.remove('active');
+        });
+
+        colorConfirm.addEventListener('click', () => {
+            currentColor = tempColor;
+            colorBtn.style.backgroundColor = currentColor;
+            colorOverlay.classList.remove('active');
+        });
+
+        colorCanvas.addEventListener('click', (e) => {
+            const rect = colorCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (colorCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (colorCanvas.height / rect.height);
+
+            tempColor = getColorAtPosition(x, y);
+
+            // Update crosshair position
+            crosshair.style.left = `${(x / colorCanvas.width) * 100}%`;
+            crosshair.style.top = `${(y / colorCanvas.height) * 100}%`;
+            crosshair.style.display = 'block';
+        });
+
+        colorCanvas.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) {
+                const rect = colorCanvas.getBoundingClientRect();
+                const x = Math.max(0, Math.min((e.clientX - rect.left) * (colorCanvas.width / rect.width), colorCanvas.width));
+                const y = Math.max(0, Math.min((e.clientY - rect.top) * (colorCanvas.height / rect.height), colorCanvas.height));
+
+                tempColor = getColorAtPosition(x, y);
+
+                crosshair.style.left = `${(x / colorCanvas.width) * 100}%`;
+                crosshair.style.top = `${(y / colorCanvas.height) * 100}%`;
+                crosshair.style.display = 'block';
+            }
+        });
+
+        // Add value
+        addValueBtn.addEventListener('click', addValue);
+        valueAmountInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addValue();
+        });
+
+        function addValue() {
+            const name = valueNameInput.value.trim();
+            const amount = parseFloat(valueAmountInput.value);
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid positive value');
+                return;
+            }
+
+            values.push({
+                name: name,
+                amount: parseFloat(amount.toFixed(2)),
+                color: currentColor
+            });
+
+            renderValuesList();
+
+            // Clear inputs
+            valueNameInput.value = '';
+            valueAmountInput.value = '';
+            valueNameInput.focus();
+        }
+
+        function renderValuesList() {
+            valuesList.innerHTML = values.map((v, i) => `
+                <div class="value-item">
+                    <div class="value-color" style="background-color: ${v.color}"></div>
+                    <span class="value-name">${v.name}</span>
+                    <span class="value-amount">${v.amount.toFixed(2)}</span>
+                    <button class="value-delete" onclick="deleteValue(${i})">&#x2715;</button>
+                </div>
+            `).join('');
+        }
+
+        window.deleteValue = function(index) {
+            values.splice(index, 1);
+            renderValuesList();
+        };
+
+        // Create pie chart
+        createChartBtn.addEventListener('click', () => {
+            if (values.length === 0) {
+                alert('Please add at least one value');
+                return;
+            }
+
+            const chartName = chartNameInput.value.trim() || 'Untitled Chart';
+
+            charts.push({
+                name: chartName,
+                values: [...values]
+            });
+
+            renderCharts();
+
+            // Reset form
+            values = [];
+            chartNameInput.value = '';
+            renderValuesList();
+        });
+
+        function renderCharts() {
+            if (charts.length === 0) {
+                chartArea.innerHTML = '<div class="no-charts">No pie charts created yet. Add values and click "Create Pie Chart" to begin.</div>';
+                return;
+            }
+
+            chartArea.innerHTML = charts.map((chart, chartIndex) => `
+                <div class="chart-container">
+                    <div class="chart-title">${chart.name}</div>
+                    <canvas class="pie-canvas" id="pie-canvas-${chartIndex}" width="300" height="300"></canvas>
+                    <div class="chart-legend" id="legend-${chartIndex}"></div>
+                </div>
+            `).join('');
+
+            // Draw each pie chart
+            charts.forEach((chart, chartIndex) => {
+                drawPieChart(chart, chartIndex);
+            });
+        }
+
+        function drawPieChart(chart, chartIndex) {
+            const canvas = document.getElementById(`pie-canvas-${chartIndex}`);
+            const legendEl = document.getElementById(`legend-${chartIndex}`);
+            const ctx = canvas.getContext('2d');
+
+            const total = chart.values.reduce((sum, v) => sum + v.amount, 0);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+
+            let startAngle = -Math.PI / 2; // Start from top
+
+            chart.values.forEach(v => {
+                const sliceAngle = (v.amount / total) * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = v.color;
+                ctx.fill();
+
+                // Draw border
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                startAngle += sliceAngle;
+            });
+
+            // Render legend
+            legendEl.innerHTML = chart.values.map(v => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: ${v.color}"></div>
+                    <span>${v.name}: ${v.amount.toFixed(2)} (${((v.amount / total) * 100).toFixed(1)}%)</span>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        colorBtn.style.backgroundColor = currentColor;
+    </script>
+</body>
+</html>
